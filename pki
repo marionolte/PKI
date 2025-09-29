@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+prog=`basename $0`
+
+TARGET="${dir}/pki.jar"
+
+. ${dir}/profile 2>/dev/null
+"$JAVA_HOME/bin/java" -Dprog="${dir}/$prog" $JAVAEX -jar "$TARGET" "$@"  2>&1
+exit $?
+
