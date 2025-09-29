@@ -1,0 +1,70 @@
+$ pki
+ usage()
+MHService - pki.jar - PKI 0.1 - Mario Nolte
+
+Options:
+        -conf <config-file>     :       provide pki information
+        -sign                   :       sign open certificate request - single step
+        -run                    :       sign ondemond open certificate request (loop until break)
+
+        -csr <dn> [-email <email>] [-dns <dns entry>] <file>
+
+                                create certificate request and store csr/public & private key
+
+$
+
+demo config file: pki.conf
+
+[ global ]
+# contains master,root -> rootCA ; contains sub ->subCA [sub has prio]  - make sure rootCA first
+role = master,subRoot1
+config = CA_default
+dir                                     = .
+
+
+[ master ]
+default_ca                              = CA_default
+
+[ subRoot1 ]
+default_ca                              = CA_subdefault
+
+[ CA_default ]
+serial                                  = $dir/serial
+database                                = $dir/certindex.txt
+new_certs_dir                           = $dir/certs
+certificate                             = $dir/cacert.pem
+private_key                             = $dir/private/cakey.pem
+public_key                              = $dir/private/cakey.pub.pem
+default_days                            = 730
+default_md                              = sha256
+C                      = DE
+ST                     = example.local
+L                      = rz.opitz-consulting.local
+O                      = opitz-consulting.local
+OU                     = intern Certificate Authority
+CN                     = INT CA Root
+emailAddress           = pki-master@example.local
+#crlUrl                                 = https://crl.example.local/crl
+#ocspUrl                                = https://ocsp.example.local/ocsp
+
+
+[ CA_subdefault ]
+serial                                  = $dir/serial
+database                                = $dir/certindex.txt
+new_certs_dir                           = $dir/certs
+certificate                             = $dir/cacert.pem
+private_key                             = $dir/private/cakey.pem
+default_days                            = 365
+default_md                              = sha256
+domain                                  = example.com
+C                      = DE
+ST                     = example.com
+L                      = rz.example.com
+O                      = org-example.com
+OU                     = example.com INT Certificate Authority
+CN                     = example.com INT Sub CA
+emailAddress           = info@example.com
+#crlUrl                                 = https://crl.example.com/crl
+#ocspUrl                                = https://ocsp.example.com/ocsp
+
+
