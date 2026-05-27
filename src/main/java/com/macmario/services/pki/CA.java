@@ -287,37 +287,38 @@ class CA extends PKIVersion{
                     isValid = this.isCSRSignatureAlgorithmValid(csr, prop.getProperty("defsult_md", "sha256"));
                 } 
                 if ( isValid ) {
-                    String[] sp = subject.split(",");
-                    for(String s:sp) {
-                        if ( s.toLowerCase().startsWith("cn=") ) {
-                            String d=prop.getProperty("domain").toLowerCase();
-                            s=s.substring("cn*".length()).replaceAll(" ", "");
-                            if ( ! s.endsWith("@"+d) && ! s.endsWith("."+d) ) {
-                                System.out.println("ERROR: csr request - "+subject+" - cn does not match as part of domain "+d);
-                                isValid=false; 
+                    String domain = prop.getProperty("domain");
+                    if ( domain != null ) {
+                        String[] sp = subject.split(",");
+                        for(String s:sp) {
+                            if ( s.toLowerCase().startsWith("cn=") ) {
+                                String d = domain.toLowerCase();
+                                s=s.substring("cn=".length()).replaceAll(" ", "");
+                                if ( ! s.endsWith("@"+d) && ! s.endsWith("."+d) ) {
+                                    System.out.println("ERROR: csr request - "+subject+" - cn does not match as part of domain "+d);
+                                    isValid=false;
+                                }
                             }
                         }
-                    }
-                    boolean uR=isUserRequest(jcaR.getSubject());
-                    if( isValid && uR) {
-                        String email = getUserEmail(csr);
-                        if ( email != null ) {
-                            String d=prop.getProperty("domain"); 
-                            if ( d!=null &&! email.toLowerCase().endsWith("@"+d.toLowerCase())) { 
-                                System.out.println("ERROR: csr request - "+subject+" - user does not match as part of domain "+d);
-                                isValid=false; 
+                        boolean uR=isUserRequest(jcaR.getSubject());
+                        if( isValid && uR) {
+                            String email = getUserEmail(csr);
+                            if ( email != null ) {
+                                if ( ! email.toLowerCase().endsWith("@"+domain.toLowerCase())) {
+                                    System.out.println("ERROR: csr request - "+subject+" - user does not match as part of domain "+domain);
+                                    isValid=false;
+                                }
                             }
                         }
-                    } 
-                    if ( isValid && !uR) {
-                        String[] dns = getDNSEntries(csr);
-                        String d=prop.getProperty("domain"); 
-                        if ( isNotNullOrEmpty(dns) && d != null ) {
-                            d=d.toLowerCase();
-                            for(String ho:dns){
-                                if (! ho.toLowerCase().endsWith("."+d) ) { 
-                                    System.out.println("ERROR: csr request - "+subject+" - host does not match as part of domain "+d);
-                                    isValid=false; 
+                        if ( isValid && !uR) {
+                            String[] dns = getDNSEntries(csr);
+                            if ( isNotNullOrEmpty(dns) ) {
+                                String d = domain.toLowerCase();
+                                for(String ho:dns){
+                                    if (! ho.toLowerCase().endsWith("."+d) ) {
+                                        System.out.println("ERROR: csr request - "+subject+" - host does not match as part of domain "+d);
+                                        isValid=false;
+                                    }
                                 }
                             }
                         }
@@ -632,6 +633,7 @@ class CA extends PKIVersion{
                 log(1,"INFO: base directory "+base.getAbsolutePath()+" exist");
             }
             this.BASEDIR=base;
+            this.days = getInt(p.getProperty("default_days", String.valueOf(this.days)));
             for( String s : p.stringPropertyNames() ) {
                 String v=stribeString(p.getProperty(s));                       
                 if ( v.contains("$dir/") ) { v=v.replace("$dir/", path+"/"+role+"/"); }

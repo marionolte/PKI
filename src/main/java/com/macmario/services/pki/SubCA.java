@@ -13,18 +13,31 @@ import java.util.Properties;
 public class SubCA extends CA{
 
     static SubCA getInstance(String role, Properties get, String property, RootCA root) {
-        SubCA ca = new SubCA(root);
+        int days = getInt(get.getProperty("default_days", ""+10*365));
+        return getInstance(role, get, property, root,days);      
+    }
+    
+    static SubCA getInstance(String role, Properties get, String property, RootCA root, int days) {
+        days = getInt(get.getProperty("default_days", ""+days));
+        SubCA ca = new SubCA(root,days);
               ca.prop=get;
               ca.validate_config(role, get, property);
         return ca;      
     }
     
+    public SubCA(RootCA root, int days) {
+        this(days);
+        this.rootCA=root;
+    }
     public SubCA(RootCA root) {
         this();
         this.rootCA=root;
     }
-    public SubCA() {
-        super(10);
+    public SubCA(int days) {
+        super(days);
         this.master=false;
+    }
+    public SubCA() {
+        this(10);
     }
 }

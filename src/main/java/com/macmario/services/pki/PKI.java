@@ -85,9 +85,12 @@ public class PKI extends PKIVersion {
                 } 
                 else if ( role.contains("master") || role.contains("root") ){
                    Properties p1=((ma.get( role )==null)?ma.get("config"):ma.get( role ));
+                   Properties p2 = ma.get( p1.getProperty("default_ca") );
+                   int days = getInt(p2.getProperty("default_days", ""+30*365));
                    this.rootCA = RootCA.getInstance(role, 
-                                                    ma.get( p1.getProperty("default_ca") ), 
-                                                    p.getProperty("dir", System.getProperty("user.dir"))
+                                                    p2, 
+                                                    p.getProperty("dir", System.getProperty("user.dir")),
+                                                    days
                    );
                 }
                 

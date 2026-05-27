@@ -13,14 +13,21 @@ import java.util.Properties;
 public class RootCA extends CA{
 
     static RootCA getInstance(String role, Properties get, String property) {
-        RootCA ca = new RootCA();
+        int days = getInt(get.getProperty("default_days", ""+30*365));
+        return getInstance(role, get, property,days); 
+    }
+    static RootCA getInstance(String role, Properties get, String property,int days) {
+        RootCA ca = new RootCA(days);
                ca.prop=get;
                ca.validate_config(role, get, property);
         return ca; 
     }
     
-    public RootCA() {
-        super(32);
+    public RootCA(int days){
+        super(days);
         this.master=true;
+    }
+    public RootCA() {
+        this(32);
     }
 }
